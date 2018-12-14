@@ -1,28 +1,127 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0D182DBE-578C-4017-B0FA-AE33ED1D5B81}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Bitfinex.Net</RootNamespace>
+    <AssemblyName>Bitfinex.Net</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
-    
-  <PropertyGroup>
-    <PackageId>Bitfinex.Net</PackageId>
-	<Authors>JKorf</Authors>
-    <PackageVersion>2.0.0</PackageVersion>
-	<Description>Bitfinex.Net is a .Net wrapper for the Bitfinex API. It includes all features the API provides, REST API and Websocket, using clear and readable objects including but not limited to Reading market info, Placing and managing orders and Reading balances and funds</Description>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>Bitfinex Bitfinex.Net C# .Net CryptoCurrency Exchange API wrapper</PackageTags>
-    <PackageProjectUrl>https://github.com/JKorf/Bitfinex.Net</PackageProjectUrl>
-	<PackageLicenseUrl>https://github.com/JKorf/Bitfinex.Net/blob/master/LICENSE</PackageLicenseUrl>
-	<PackageIconUrl>https://raw.githubusercontent.com/JKorf/Bitfinex.Net/master/Resources/icon.png</PackageIconUrl>
-	<NeutralLanguage>en</NeutralLanguage>
-	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	<PackageReleaseNotes>2.0.0 - Updated to CryptoExchange.Net v2
-	</PackageReleaseNotes>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CryptoExchange.Net" Version="2.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <Reference Include="CryptoExchange.Net">
+      <HintPath>..\..\CryptoExchange.Net\CryptoExchange.Net\bin\Debug\CryptoExchange.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
-  
+  <ItemGroup>
+    <Compile Include="BitfinexAuthenticationProvider.cs" />
+    <Compile Include="BitfinexClient.cs" />
+    <Compile Include="BitfinexSocketClient.cs" />
+    <Compile Include="Converters\BoolToIntConverter.cs" />
+    <Compile Include="Converters\DecimalAsStringConverter.cs" />
+    <Compile Include="Converters\DepositMethodConverter.cs" />
+    <Compile Include="Converters\FrequencyConverter.cs" />
+    <Compile Include="Converters\FundingTypeConverter.cs" />
+    <Compile Include="Converters\MarginFundingTypeConverter.cs" />
+    <Compile Include="Converters\OrderSideConverter.cs" />
+    <Compile Include="Converters\OrderStatusConverter.cs" />
+    <Compile Include="Converters\OrderTypeConverter.cs" />
+    <Compile Include="Converters\OrderTypeV1Converter.cs" />
+    <Compile Include="Converters\PlatformStatusConverter.cs" />
+    <Compile Include="Converters\PositionStatusConverter.cs" />
+    <Compile Include="Converters\PrecisionConverter.cs" />
+    <Compile Include="Converters\SortingConverter.cs" />
+    <Compile Include="Converters\StatKeyConverter.cs" />
+    <Compile Include="Converters\StatSectionConverter.cs" />
+    <Compile Include="Converters\StatSideConverter.cs" />
+    <Compile Include="Converters\TimeFrameConverter.cs" />
+    <Compile Include="Converters\WalletTypeConverter.cs" />
+    <Compile Include="Converters\WithdrawalTypeConverter.cs" />
+    <Compile Include="Converters\WithdrawWalletConverter.cs" />
+    <Compile Include="Interfaces\IBitfinexClient.cs" />
+    <Compile Include="Interfaces\IBitfinexSocketClient.cs" />
+    <Compile Include="Objects\BitfinexAlert.cs" />
+    <Compile Include="Objects\BitfinexAvailableBalance.cs" />
+    <Compile Include="Objects\BitfinexCandle.cs" />
+    <Compile Include="Objects\BitfinexEnums.cs" />
+    <Compile Include="Objects\BitfinexError.cs" />
+    <Compile Include="Objects\BitfinexEvents.cs" />
+    <Compile Include="Objects\BitfinexFundingCredit.cs" />
+    <Compile Include="Objects\BitfinexFundingInfo.cs" />
+    <Compile Include="Objects\BitfinexFundingLoan.cs" />
+    <Compile Include="Objects\BitfinexFundingOffer.cs" />
+    <Compile Include="Objects\BitfinexFundingTrade.cs" />
+    <Compile Include="Objects\BitfinexMarginBase.cs" />
+    <Compile Include="Objects\BitfinexMarginSymbol.cs" />
+    <Compile Include="Objects\BitfinexMarketAveragePrice.cs" />
+    <Compile Include="Objects\BitfinexMarketOverview.cs" />
+    <Compile Include="Objects\BitfinexMarketOverviewRest.cs" />
+    <Compile Include="Objects\BitfinexMovement.cs" />
+    <Compile Include="Objects\BitfinexOptions.cs" />
+    <Compile Include="Objects\BitfinexOrder.cs" />
+    <Compile Include="Objects\BitfinexOrderBookEntry.cs" />
+    <Compile Include="Objects\BitfinexPerformance.cs" />
+    <Compile Include="Objects\BitfinexPlatformStatus.cs" />
+    <Compile Include="Objects\BitfinexPosition.cs" />
+    <Compile Include="Objects\BitfinexStats.cs" />
+    <Compile Include="Objects\BitfinexSuccessResult.cs" />
+    <Compile Include="Objects\BitfinexSymbolDetails.cs" />
+    <Compile Include="Objects\BitfinexTradeDetails.cs" />
+    <Compile Include="Objects\BitfinexTradeSimple.cs" />
+    <Compile Include="Objects\BitfinexUserInfo.cs" />
+    <Compile Include="Objects\BitfinexWallet.cs" />
+    <Compile Include="Objects\RestV1Objects\BitfinexAccountInfo.cs" />
+    <Compile Include="Objects\RestV1Objects\BitfinexPlacedOrder.cs" />
+    <Compile Include="Objects\RestV1Objects\BitfinexResult.cs" />
+    <Compile Include="Objects\RestV1Objects\BitfinexWithdrawalFees.cs" />
+    <Compile Include="Objects\RestV1Objects\BitfinexWithdrawResult.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexAuthentication.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexAuthenticationResponse.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexMultiCancel.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexNewOrder.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexResponse.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexSocketEvent.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexSocketQuery.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexSocketSubscription.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexSubscriptionRequest.cs" />
+    <Compile Include="Objects\SocketObjects\BitfinexUpdateOrder.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
