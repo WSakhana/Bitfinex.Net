@@ -1,4 +1,5 @@
 ﻿using Bitfinex.Net.Converters;
+using Bitfinex.Net.Interfaces;
 using Bitfinex.Net.Objects;
 using Bitfinex.Net.Objects.RestV1Objects;
 using CryptoExchange.Net;
@@ -11,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using Bitfinex.Net.Interfaces;
 
 namespace Bitfinex.Net
 {
@@ -20,6 +20,8 @@ namespace Bitfinex.Net
         #region fields
 
         private static BitfinexClientOptions defaultOptions = new BitfinexClientOptions();
+        
+
         private static BitfinexClientOptions DefaultOptions => defaultOptions.Copy<BitfinexClientOptions>();
 
         private const string ApiVersion1 = "1";
@@ -30,6 +32,7 @@ namespace Bitfinex.Net
         private const string SymbolDetailsEndpoint = "symbols_details";
         private const string TickersEndpoint = "tickers";
         private const string TradesEndpoint = "trades/{}/hist";
+        
         private const string OrderBookEndpoint = "book/{}/{}";
         private const string StatsEndpoint = "stats1/{}:1m:{}:{}/{}";
         private const string LastCandleEndpoint = "candles/trade:{}:{}/last";
@@ -39,6 +42,7 @@ namespace Bitfinex.Net
         private const string WalletsEndpoint = "auth/r/wallets";
         private const string CalcAvailableBalanceEndpoint = "auth/calc/order/avail";
         private const string OpenOrdersEndpoint = "auth/r/orders";
+        
         private const string OrderHistoryEndpoint = "auth/r/orders/{}/hist";
         private const string OrderTradesEndpoint = "auth/r/order/{}:{}/trades";
         private const string MyTradesEndpoint = "auth/r/trades/{}/hist";
@@ -69,7 +73,7 @@ namespace Bitfinex.Net
         private const string CancelOrderEndpoint = "order/cancel";
         private const string CancelAllOrderEndpoint = "order/cancel/all";
         private const string OrderStatusEndpoint = "order/status";
-
+        private const string OrdersHistoryEndpoint = "orders/hist";
         private const string WithdrawEndpoint = "withdraw";
         #endregion
 
@@ -77,7 +81,7 @@ namespace Bitfinex.Net
         /// <summary>
         /// Create a new instance of BitfinexClient using the default options
         /// </summary>
-        public BitfinexClient(): this(DefaultOptions)
+        public BitfinexClient() : this(DefaultOptions)
         {
         }
 
@@ -203,7 +207,9 @@ namespace Bitfinex.Net
         {
             // Only accepts tBTCUSD format
             if (symbol.Length == 6)
+            {
                 symbol = "t" + symbol.ToUpper();
+            }
 
             var parameters = new Dictionary<string, object>();
             parameters.AddOptionalParameter("limit", limit?.ToString());
@@ -233,7 +239,9 @@ namespace Bitfinex.Net
         public async Task<CallResult<BitfinexOrderBookEntry[]>> GetOrderBookAsync(string symbol, Precision precision, int? limit = null)
         {
             if (limit != null && (limit != 25 && limit != 100))
+            {
                 return new CallResult<BitfinexOrderBookEntry[]>(null, new ArgumentError("Limit should be either 25 or 100"));
+            }
 
             var parameters = new Dictionary<string, object>();
             parameters.AddOptionalParameter("len", limit?.ToString());
@@ -308,7 +316,7 @@ namespace Bitfinex.Net
         /// <param name="endTime">The end time of the candles</param>
         /// <param name="sorting">The way the result is sorted</param>
         /// <returns></returns>
-        public CallResult<BitfinexCandle[]> GetCandles(TimeFrame timeFrame, string symbol, int? limit = null, DateTime? startTime = null, DateTime? endTime = null, Sorting? sorting = null) 
+        public CallResult<BitfinexCandle[]> GetCandles(TimeFrame timeFrame, string symbol, int? limit = null, DateTime? startTime = null, DateTime? endTime = null, Sorting? sorting = null)
             => GetCandlesAsync(timeFrame, symbol, limit, startTime, endTime, sorting).Result;
 
         /// <summary>
@@ -321,7 +329,7 @@ namespace Bitfinex.Net
         /// <param name="endTime">The end time of the candles</param>
         /// <param name="sorting">The way the result is sorted</param>
         /// <returns></returns>
-        public async Task<CallResult<BitfinexCandle[]>> GetCandlesAsync(TimeFrame timeFrame, string symbol,int? limit = null, DateTime? startTime = null, DateTime? endTime = null, Sorting? sorting = null)
+        public async Task<CallResult<BitfinexCandle[]>> GetCandlesAsync(TimeFrame timeFrame, string symbol, int? limit = null, DateTime? startTime = null, DateTime? endTime = null, Sorting? sorting = null)
         {
             var parameters = new Dictionary<string, object>();
             parameters.AddOptionalParameter("limit", limit?.ToString());
@@ -345,7 +353,7 @@ namespace Bitfinex.Net
         /// <param name="period">Maximum period for margin funding</param>
         /// <returns>The average price at which the execution would happen</returns>
         public CallResult<BitfinexMarketAveragePrice> GetMarketAveragePrice(string symbol, decimal amount, decimal rateLimit, int? period = null) => GetMarketAveragePriceAsync(symbol, amount, rateLimit, period).Result;
-        
+
         /// <summary>
         /// Calculate the average execution price
         /// </summary>
@@ -395,6 +403,28 @@ namespace Bitfinex.Net
         public async Task<CallResult<BitfinexOrder[]>> GetActiveOrdersAsync()
         {
             return await ExecuteRequest<BitfinexOrder[]>(GetUrl(OpenOrdersEndpoint, ApiVersion2), Constants.PostMethod, null, true).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Get the active ordersView your latest inactive orders.
+        /// Limited to last 3 days and 1 request per minute.
+        /// </summary>
+        /// <returns></returns>
+        public CallResult<BitfinexPlacedOrder[]> GetOrdersHistory(int? limit) => GetOrdersHistoryAsync(limit).Result;
+
+        /// <summary>
+        /// Get the active ordersView your latest inactive orders.
+        /// Limited to last 3 days and 1 request per minute.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<CallResult<BitfinexPlacedOrder[]>> GetOrdersHistoryAsync(int? limit)
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.AddOptionalParameter("limit", limit?.ToString());
+
+            return await ExecuteRequest<BitfinexPlacedOrder[]>(GetUrl(OrdersHistoryEndpoint, ApiVersion1), Constants.PostMethod, parameters, true)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -513,7 +543,7 @@ namespace Bitfinex.Net
         /// <param name="limit">Max amount of results</param>
         /// <returns></returns>
         public CallResult<BitfinexFundingOffer[]> GetFundingOfferHistory(string symbol, DateTime? startTime = null, DateTime? endTime = null, int? limit = null) => GetFundingOfferHistoryAsync(symbol, startTime, endTime, limit).Result;
-        
+
         /// <summary>
         /// Get the funding offer history
         /// </summary>
@@ -715,7 +745,7 @@ namespace Bitfinex.Net
         {
             return await ExecuteRequest<BitfinexMovement[]>(GetUrl(FillPathParameter(MovementsEndpoint, symbol), ApiVersion2), Constants.PostMethod, null, true).ConfigureAwait(false);
         }
-        
+
         public CallResult<BitfinexPerformance> GetDailyPerformance() => GetDailyPerformanceAsync().Result;
         public async Task<CallResult<BitfinexPerformance>> GetDailyPerformanceAsync()
         {
@@ -728,7 +758,7 @@ namespace Bitfinex.Net
         /// </summary>
         /// <returns></returns>
         public CallResult<BitfinexAlert[]> GetAlertList() => GetAlertListAsync().Result;
-        
+
         /// <summary>
         /// Get the list of alerts
         /// </summary>
@@ -737,7 +767,7 @@ namespace Bitfinex.Net
         {
             var parameters = new Dictionary<string, object>()
             {
-                { "type", "price" } 
+                { "type", "price" }
             };
 
             return await ExecuteRequest<BitfinexAlert[]>(GetUrl(AlertListEndpoint, ApiVersion2), Constants.PostMethod, parameters, true).ConfigureAwait(false);
@@ -840,13 +870,13 @@ namespace Bitfinex.Net
             string symbol,
             OrderSide side,
             OrderTypeV1 type,
-            decimal amount, 
-            decimal price, 
-            bool? hidden = null, 
-            bool? postOnly = null, 
+            decimal amount,
+            decimal price,
+            bool? hidden = null,
+            bool? postOnly = null,
             bool? useAllAvailable = null,
-            bool? ocoOrder = null, 
-            decimal? ocoBuyPrice = null, 
+            bool? ocoOrder = null,
+            decimal? ocoBuyPrice = null,
             decimal? ocoSellPrice = null) => PlaceOrderAsync(symbol, side, type, amount, price, hidden, postOnly, useAllAvailable, ocoOrder, ocoBuyPrice, ocoSellPrice).Result;
 
         /// <summary>
@@ -865,15 +895,15 @@ namespace Bitfinex.Net
         /// <param name="ocoSellPrice">The one-cancels-other sell price</param>
         /// <returns></returns>
         public async Task<CallResult<BitfinexPlacedOrder>> PlaceOrderAsync(
-            string symbol, 
-            OrderSide side, 
-            OrderTypeV1 type, 
-            decimal amount, 
-            decimal price, 
+            string symbol,
+            OrderSide side,
+            OrderTypeV1 type,
+            decimal amount,
+            decimal price,
             bool? hidden = null,
-            bool? postOnly = null, 
+            bool? postOnly = null,
             bool? useAllAvailable = null,
-            bool? ocoOrder = null, 
+            bool? ocoOrder = null,
             decimal? ocoBuyPrice = null,
             decimal? ocoSellPrice = null)
         {
@@ -888,7 +918,7 @@ namespace Bitfinex.Net
             };
             parameters.AddOptionalParameter("is_hidden", hidden);
             parameters.AddOptionalParameter("is_postonly", postOnly);
-            parameters.AddOptionalParameter("use_all_available", useAllAvailable == true ? "1": null);
+            parameters.AddOptionalParameter("use_all_available", useAllAvailable == true ? "1" : null);
             parameters.AddOptionalParameter("ocoorder", ocoOrder);
             parameters.AddOptionalParameter("buy_price_oco", ocoBuyPrice);
             parameters.AddOptionalParameter("sell_price_oco", ocoSellPrice);
@@ -1037,7 +1067,7 @@ namespace Bitfinex.Net
                                                                  bankCity, bankCountry, paymentDetails, expressWire, intermediaryBankName, intermediaryBankAddress,
                                                                  intermediaryBankCity, intermediaryBankCountry, intermediaryBankAccount, intermediaryBankSwift,
                                                                  accountName, paymentId).Result;
-                                                                                    
+
 
         /// <summary>
         /// Withdraw funds from Bitfinex, either to a crypto currency address or a bank account
@@ -1066,12 +1096,12 @@ namespace Bitfinex.Net
         /// <param name="accountName">The name of the account</param>
         /// <param name="paymentId">Hex string for Monero transaction</param>
         /// <returns></returns>
-        public async Task<CallResult<BitfinexWithdrawalResult>> WithdrawAsync(WithdrawalType withdrawType, 
-                                                                         WithdrawWallet wallet, 
-                                                                         decimal amount, 
-                                                                         string address = null, 
+        public async Task<CallResult<BitfinexWithdrawalResult>> WithdrawAsync(WithdrawalType withdrawType,
+                                                                         WithdrawWallet wallet,
+                                                                         decimal amount,
+                                                                         string address = null,
                                                                          string accountNumber = null,
-                                                                         string bankSwift = null, 
+                                                                         string bankSwift = null,
                                                                          string bankName = null,
                                                                          string bankAddress = null,
                                                                          string bankCity = null,
@@ -1084,7 +1114,7 @@ namespace Bitfinex.Net
                                                                          string intermediaryBankCountry = null,
                                                                          string intermediaryBankAccount = null,
                                                                          string intermediaryBankSwift = null,
-                                                                         string accountName = null, 
+                                                                         string accountName = null,
                                                                          string paymentId = null)
         {
             var parameters = new Dictionary<string, object>()
@@ -1103,7 +1133,7 @@ namespace Bitfinex.Net
             parameters.AddOptionalParameter("bank_city", bankCity);
             parameters.AddOptionalParameter("bank_country", bankCountry);
             parameters.AddOptionalParameter("detail_payment", paymentDetails);
-            parameters.AddOptionalParameter("expressWire", expressWire == null ? null :JsonConvert.SerializeObject(expressWire, new BoolToIntConverter(false)));
+            parameters.AddOptionalParameter("expressWire", expressWire == null ? null : JsonConvert.SerializeObject(expressWire, new BoolToIntConverter(false)));
             parameters.AddOptionalParameter("intermediary_bank_name", intermediaryBankName);
             parameters.AddOptionalParameter("intermediary_bank_address", intermediaryBankAddress);
             parameters.AddOptionalParameter("intermediary_bank_city", intermediaryBankCity);
@@ -1113,10 +1143,15 @@ namespace Bitfinex.Net
 
             var result = await ExecuteRequest<BitfinexWithdrawalResult[]>(GetUrl(WithdrawEndpoint, ApiVersion1), Constants.PostMethod, parameters, true).ConfigureAwait(false);
             if (!result.Success)
+            {
                 return new CallResult<BitfinexWithdrawalResult>(null, result.Error);
+            }
 
-            if(result.Data[0].Status == "error")
+            if (result.Data[0].Status == "error")
+            {
                 return new CallResult<BitfinexWithdrawalResult>(result.Data[0], new ServerError(result.Data[0].Message));
+            }
+
             return new CallResult<BitfinexWithdrawalResult>(result.Data[0], null);
         }
 
@@ -1132,7 +1167,7 @@ namespace Bitfinex.Net
         /// <returns></returns>
         public async Task<CallResult<BitfinexUserInfo>> GetUserInfoAsync()
         {
-            return await ExecuteRequest<BitfinexUserInfo>(GetUrl(UserInfoEndpoint, ApiVersion2), Constants.PostMethod, signed:true).ConfigureAwait(false);
+            return await ExecuteRequest<BitfinexUserInfo>(GetUrl(UserInfoEndpoint, ApiVersion2), Constants.PostMethod, signed: true).ConfigureAwait(false);
         }
 
 

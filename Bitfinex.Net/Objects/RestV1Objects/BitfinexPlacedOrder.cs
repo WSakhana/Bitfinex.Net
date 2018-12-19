@@ -10,7 +10,7 @@ namespace Bitfinex.Net.Objects.RestV1Objects
         public long Id { get; set; }
         public string Symbol { get; set; }
         public string Exchange { get; set; }
-        public decimal Price { get; set; }
+        public decimal? Price { get; set; }
         [JsonProperty("avg_execution_price")]
         public decimal AverageExecutionPrice { get; set; }
         [JsonConverter(typeof(OrderSideConverter))]
